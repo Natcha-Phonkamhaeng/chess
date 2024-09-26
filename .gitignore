@@ -1,0 +1,6 @@
+note.txt
+__init__.py
+__pycache__/
+images/
+test.py
+venv/
