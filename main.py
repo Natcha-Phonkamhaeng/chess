@@ -1,5 +1,5 @@
 import pygame
-from engine import GameState
+from engine import GameState, Move
 
 
 WIDTH =  HEIGHT = 512
@@ -42,12 +42,35 @@ def main():
 	screen.fill(pygame.Color('white'))
 	gs = GameState()
 	load_images()
-	draw_game_state(screen, gs)
+	
 	running = True
+	sq_selected = () # return (row, col) to keep track of last click of the users
+	player_click = [] # return [(6,4), (4,4)] to keep track of users click
 	while running:
-		for e in pygame.event.get():
-			if e.type == pygame.QUIT or e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 				running = False
+			elif event.type == pygame.MOUSEBUTTONDOWN:
+				location = pygame.mouse.get_pos() # return (x,y)
+				col = location[0]//SQ_SIZE
+				row = location[1]//SQ_SIZE
+				# print(f'location: {location}, col: {col}, row: {row}')
+				if sq_selected == (row, col): # if users click the same square twice
+					sq_selected = ()
+					player_click = []
+					# print(f'selected square: {sq_selected}')
+				else:
+					sq_selected = (row, col)
+					player_click.append(sq_selected) # append for both 1st and 2nd click
+					# print(f'selected square: {sq_selected}')
+				if len(player_click) == 2: # logic we want to move the pieces for the users
+					move = Move(player_click[0], player_click[1], gs.board)
+					print(move.get_chess_notation())
+					gs.make_move(move)
+					sq_selected = ()
+					player_click = []
+
+		draw_game_state(screen, gs)
 		clock.tick(MAX_FPS)
 		pygame.display.flip()
 
