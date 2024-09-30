@@ -41,11 +41,14 @@ def main():
 	clock = pygame.time.Clock()
 	screen.fill(pygame.Color('white'))
 	gs = GameState()
+	valid_move = gs.get_valid_move()
+	move_made = False
+
 	load_images()
-	
 	running = True
 	sq_selected = () # return (row, col) to keep track of last click of the users
 	player_click = [] # return [(6,4), (4,4)] to keep track of users click
+
 	while running:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -66,9 +69,19 @@ def main():
 				if len(player_click) == 2: # logic we want to move the pieces for the users
 					move = Move(player_click[0], player_click[1], gs.board)
 					print(move.get_chess_notation())
-					gs.make_move(move)
+					if move in valid_move:
+						gs.make_move(move)
+						move_made = True
 					sq_selected = ()
 					player_click = []
+			elif event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_z: # undo the last move
+					gs.undo_move()
+					move_made = True
+
+		if move_made:
+			valid_move = gs.get_valid_move()
+			move_made = False
 
 		draw_game_state(screen, gs)
 		clock.tick(MAX_FPS)

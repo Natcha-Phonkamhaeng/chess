@@ -13,12 +13,44 @@ class GameState:
 		self.white_to_move = True
 		self.move_log = []
 
+
 	def make_move(self, move):
+		'''
+		basic chess move does not include catling and pown promotion etc.
+		'''
 		self.board[move.start_row][move.start_col] = '--'
 		self.board[move.end_row][move.end_col] = move.piece_moved
 		self.move_log.append(move)
 		self.white_to_move = not self.white_to_move
 
+	def undo_move(self):
+		if len(self.move_log) != 0: # make sure that there's a move to undo
+			move = self.move_log.pop() # pop the last moved
+			self.board[move.start_row][move.start_col] = move.piece_moved
+			self.board[move.end_row][move.end_col] = move.piece_captured
+			self.white_to_move = not self.white_to_move
+
+	def get_valid_move(self):
+		return self.get_all_possible_move()
+
+	def get_all_possible_move(self):
+		moves = [Move((6,4), (4,4), self.board)]
+		for row in range(len(self.board)):
+			for col in range(len(self.board)):
+				turn = self.board[row][col][0] # get b or w move
+				if (turn == 'w' and self.white_to_move) and (turn == 'b' and not self.white_to_move):
+					piece = self.board[row][col][1] # return pieces
+					if piece == 'p':
+						self.get_pawn_move(row, col, move)
+					elif piece == 'R':
+						self.get_rook_move(row, col, move)
+		return moves
+
+	def get_pawn_move(self, row, col, move):
+		pass
+
+	def get_rook_move(self, row, col, move):
+		pass
 
 class Move:
 	# maps keys to values with dictionary
@@ -55,6 +87,13 @@ class Move:
 		self.end_col = end_sq[1]
 		self.piece_moved = board[self.start_row][self.start_col]
 		self.piece_captured = board[self.end_row][self.end_col]
+		self.move_id = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
+		print(self.move_id)
+
+	def __eq__(self, other):
+		if isinstance(other, Move):
+			return self.move_id == other.move_id
+		return False
 
 	def get_rank_file(self, row, col):
 		return self.cols_to_files[col] + self.rows_to_ranks[row]
