@@ -10,6 +10,14 @@ class GameState:
 			['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
 			['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']
 		] # 8x8 dimention
+		self.move_function = {
+							'p': self.get_pawn_move, 
+							'R': self.get_rook_move, 
+							'B': self.get_bishop_move,
+							'Q': self.get_queen_move,
+							'K': self.get_king_move,
+							'N': self.get_knight_move
+							}
 		self.white_to_move = True
 		self.move_log = []
 
@@ -34,24 +42,58 @@ class GameState:
 		return self.get_all_possible_move()
 
 	def get_all_possible_move(self):
-		moves = [Move((6,4), (4,4), self.board)]
+		move = []
 		for row in range(len(self.board)):
 			for col in range(len(self.board)):
 				turn = self.board[row][col][0] # get b or w move
-				if (turn == 'w' and self.white_to_move) and (turn == 'b' and not self.white_to_move):
+				if (turn == 'w' and self.white_to_move) or (turn == 'b' and not self.white_to_move):
 					piece = self.board[row][col][1] # return pieces
-					if piece == 'p':
-						self.get_pawn_move(row, col, move)
-					elif piece == 'R':
-						self.get_rook_move(row, col, move)
-		return moves
+					self.move_function[piece](row, col, move)
+		return move
 
 	def get_pawn_move(self, row, col, move):
-		pass
+		if self.white_to_move:
+			if self.board[row-1][col] == "--": # 1 sq pawn advance
+				move.append(Move((row, col), (row-1, col), self.board))
+				if row == 6 and self.board[row-2][col] == "--": # 2 sq pawn advance
+					move.append(Move((row, col), (row-2, col), self.board))
+			if col-1 >= 0: # avoid moving to -1 and captures on the left
+				if self.board[row-1][col-1][0] == "b": # captured black piece
+					move.append(Move((row, col), (row-1, col-1), self.board))
+			if col+1 <= 7: #captures on the right
+				if self.board[row-1][col+1][0] == 'b': # captured black piece
+					move.append(Move((row, col), (row-1, col+1), self.board))
+			
+		else: # black pawn move
+			if self.board[row+1][col] == "--": # 1 sq black pawn advance
+				move.append(Move((row, col), (row+1, col), self.board))
+				if row == 1 and self.board[row+2][col] == "--": # 2 sq pawn advance
+					move.append(Move((row, col), (row+2, col), self.board))
+			if col-1 >= 0: # capture on the left
+				if self.board[row+1][col-1][0] == "w": # capture white on the left
+					move.append(Move((row, col), (row+1, col-1), self.board))
+			if col+1 <= 7: # capture on the right
+				if self.board[row+1][col+1][0] == "w": # capture white on the right
+					move.append(Move((row, col), (row+1, col+1), self.board))
+		# add pawn promotion later
+
 
 	def get_rook_move(self, row, col, move):
 		pass
 
+	def get_bishop_move(self, row, col, move):
+		pass
+
+	def get_knight_move(self, row, col, move):
+		pass
+
+	def get_queen_move(self, row, col, move):
+		pass
+
+	def get_king_move(self, row, col, move):
+		pass
+
+#################################################################################
 class Move:
 	# maps keys to values with dictionary
 	ranks_to_rows = {
@@ -88,7 +130,6 @@ class Move:
 		self.piece_moved = board[self.start_row][self.start_col]
 		self.piece_captured = board[self.end_row][self.end_col]
 		self.move_id = self.start_row * 1000 + self.start_col * 100 + self.end_row * 10 + self.end_col
-		print(self.move_id)
 
 	def __eq__(self, other):
 		if isinstance(other, Move):
