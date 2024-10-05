@@ -79,16 +79,59 @@ class GameState:
 
 
 	def get_rook_move(self, row, col, move):
-		pass
+		directions = ((-1,0), (0,-1), (1,0), (0,1)) # up, left, down, right
+		enemy_color = 'b' if self.white_to_move else 'w'
+		'''
+		this is equal to
+		if self.white_to_move:
+			enemy_color = 'b'
+		else:	
+			enemy_color = 'w'
+		'''
+		for d in directions:
+			for i in range(1,8): # counting 1-7
+				end_row = row + d[0] * i # d[0] is -1 0 1 0, when it multiply by 0 it will not move so it will move only row
+				end_col = col + d[1] * i # d[1] is 0 -1 0 1, when it multiply by 0 it will not move so it will move only col
+				if 0 <= end_row < 8 and 0<= end_col < 8: # check that move will still valid on board
+					end_piece = self.board[end_row][end_col]
+					if end_piece == '--': # rook landing on empty space
+						move.append(Move((row, col), (end_row, end_col), self.board))
+					elif end_piece[0] == enemy_color: # found enemy piece
+						move.append(Move((row, col), (end_row, end_col), self.board))
+						break # break the for loop, we will not jump the enemy piece
+					else:
+						break # break the loop, if we found our friend color, we will not jump and will not landing on our friend
+				else:
+					break # break if our rook move is off the board
 
-	def get_bishop_move(self, row, col, move):
-		pass
+
+	def get_bishop_move(self, row, col, move): # similar move like rook
+		directions = ((-1,-1), (-1,1), (1,-1), (1,1))
+		enemy_color = 'b' if self.white_to_move else 'w'
+		for d in directions:
+			for i in range(1,8):
+				end_row = row + d[0] * i
+				end_col = col + d[1] * i
+				if 0<= end_row < 8 and 0<= end_col < 8:
+					end_piece = self.board[end_row][end_col]
+					if end_piece == '--':
+						move.append(Move((row, col), (end_row, end_col), self.board))
+					elif end_piece[0] == enemy_color:
+						move.append(Move((row, col), (end_row, end_col), self.board))
+						break
+					else:
+						break
+				else:
+					break
+
+
 
 	def get_knight_move(self, row, col, move):
 		pass
 
-	def get_queen_move(self, row, col, move):
-		pass
+	def get_queen_move(self, row, col, move): # queen can move like rook and bishop
+		self.get_rook_move(row, col, move)
+		self.get_bishop_move(row, col, move)
 
 	def get_king_move(self, row, col, move):
 		pass
