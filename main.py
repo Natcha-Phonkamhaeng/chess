@@ -72,8 +72,10 @@ def main():
 					if move in valid_move:
 						gs.make_move(move)
 						move_made = True
-					sq_selected = ()
-					player_click = []
+						sq_selected = ()
+						player_click = []
+					else:
+						player_click = [sq_selected]
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_z: # undo the last move
 					gs.undo_move()

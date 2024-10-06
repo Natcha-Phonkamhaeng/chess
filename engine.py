@@ -125,16 +125,33 @@ class GameState:
 					break
 
 
-
 	def get_knight_move(self, row, col, move):
-		pass
+		directions = ((-2,-1), (-2,1), (-1,-2), (-1,2), (1,-2), (1,2), (2,-1), (2,1))
+		ally_color = 'w' if self.white_to_move else 'b'
+		for d in directions:
+			end_row = row + d[0]
+			end_col = col + d[1]
+			if 0 <= end_row < 8 and 0 <= end_col < 8:
+				end_piece = self.board[end_row][end_col]
+				if end_piece[0] != ally_color:
+					move.append(Move((row, col), (end_row, end_col), self.board))
+
 
 	def get_queen_move(self, row, col, move): # queen can move like rook and bishop
 		self.get_rook_move(row, col, move)
 		self.get_bishop_move(row, col, move)
 
+
 	def get_king_move(self, row, col, move):
-		pass
+		directions = ((-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1))
+		ally_color = 'w' if self.white_to_move else 'b'
+		for i in range(8):
+			end_row = row + directions[i][0]
+			end_col = col + directions[i][1]
+			if 0 <= end_row < 8 and 0 <= end_col < 8:
+				end_piece = self.board[end_row][end_col]
+				if end_piece[0] != ally_color:
+					move.append(Move((row, col), (end_row, end_col), self.board))		
 
 #################################################################################
 class Move:
