@@ -20,6 +20,10 @@ class GameState:
 							}
 		self.white_to_move = True
 		self.move_log = []
+		self.white_king_location = (7,4)
+		self.black_king_location = (0,4)
+		self.check_mate = False
+		self.stale_mate = False
 
 
 	def make_move(self, move):
@@ -30,6 +34,11 @@ class GameState:
 		self.board[move.end_row][move.end_col] = move.piece_moved
 		self.move_log.append(move)
 		self.white_to_move = not self.white_to_move
+		# update king location after moved
+		if move.piece_moved == 'wK':
+			self.white_king_location = (move.end_row, move.end_col)
+		elif move.piece_moved == 'bK':
+			self.black_king_location = (move.end_row, move.end_col)
 
 	def undo_move(self):
 		if len(self.move_log) != 0: # make sure that there's a move to undo
@@ -37,9 +46,37 @@ class GameState:
 			self.board[move.start_row][move.start_col] = move.piece_moved
 			self.board[move.end_row][move.end_col] = move.piece_captured
 			self.white_to_move = not self.white_to_move
+			if move.piece_moved == 'wK':
+				self.white_king_location = (move.start_row, move.start_col)
+			elif move.piece_moved == 'bK':
+				self.black_king_location = (move.start_row, move.start_col)
 
 	def get_valid_move(self):
-		return self.get_all_possible_move()
+		move = self.get_all_possible_move()
+		for i in range(len(move)-1,-1,-1):
+			self.make_move(move[i])
+			self.white_to_move = not self.white_to_move
+			if self.in_check():
+				move.remove(move[i])
+			self.white_to_move = not self.white_to_move
+			self.undo_move()
+			
+		return move
+
+	def in_check(self):
+		if self.white_to_move:
+			return self.square_under_attack(self.white_king_location[0], self.white_king_location[1])
+		else:
+			return self.square_under_attack(self.black_king_location[0], self.black_king_location[1])
+
+	def square_under_attack(self, row, col):
+		self.white_to_move = not self.white_to_move
+		opp_move = self.get_all_possible_move()
+		self.white_to_move = not self.white_to_move
+		for move in opp_move:
+			if move.end_row == row and move.end_col == col:
+				return True
+		return False
 
 	def get_all_possible_move(self):
 		move = []
