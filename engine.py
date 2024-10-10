@@ -60,7 +60,14 @@ class GameState:
 				move.remove(move[i])
 			self.white_to_move = not self.white_to_move
 			self.undo_move()
-			
+		if len(move) == 0:
+			if self.in_check():
+				self.check_mate = True
+			else:
+				self.stale_mate = True
+		else:
+			self.check_mate = False
+			self.stale_mate = False
 		return move
 
 	def in_check(self):
