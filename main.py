@@ -69,12 +69,13 @@ def main():
 				if len(player_click) == 2: # logic we want to move the pieces for the users
 					move = Move(player_click[0], player_click[1], gs.board)
 					print(move.get_chess_notation())
-					if move in valid_move:
-						gs.make_move(move)
-						move_made = True
-						sq_selected = ()
-						player_click = []
-					else:
+					for i in range(len(valid_move)):
+						if move == valid_move[i]:
+							gs.make_move(valid_move[i])
+							move_made = True
+							sq_selected = ()
+							player_click = []
+					if not move_made:
 						player_click = [sq_selected]
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_z: # undo the last move
@@ -88,6 +89,7 @@ def main():
 		draw_game_state(screen, gs)
 		clock.tick(MAX_FPS)
 		pygame.display.flip()
+		
 
 
 
