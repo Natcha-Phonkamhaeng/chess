@@ -14,8 +14,27 @@ def load_images():
 		IMAGES[piece] = pygame.transform.scale(pygame.image.load(f'images/{piece}.png'), (SQ_SIZE, SQ_SIZE))
 
 
-def draw_game_state(screen, gs):
+def hightlight_square(screen, gs, valid_move, sq_selected):
+	'''
+	highlight square selected and moves for piece selected
+	'''
+	if sq_selected != ():
+		row, col = sq_selected
+		if gs.board[row][col][0] == ('w' if gs.white_to_move else 'b'):
+			s = pygame.Surface((SQ_SIZE, SQ_SIZE)) # create hightlight with pygame surface
+			s.set_alpha(100) # transparency value -> 0 is pure transparency
+			s.fill(pygame.Color('blue'))
+			screen.blit(s, (col*SQ_SIZE, row*SQ_SIZE))
+			# hight moves from that square
+			s.fill(pygame.Color('yellow'))
+			for move in valid_move:
+				if move.start_row == row and move.start_col == col:
+					screen.blit(s, (move.end_col*SQ_SIZE, move.end_row*SQ_SIZE))
+
+
+def draw_game_state(screen, gs, valid_move, sq_selected):
 	draw_board(screen)
+	hightlight_square(screen, gs, valid_move, sq_selected)
 	draw_pieces(screen, gs.board)
 
 
@@ -86,7 +105,7 @@ def main():
 			valid_move = gs.get_valid_move()
 			move_made = False
 
-		draw_game_state(screen, gs)
+		draw_game_state(screen, gs, valid_move, sq_selected)
 		clock.tick(MAX_FPS)
 		pygame.display.flip()
 		
