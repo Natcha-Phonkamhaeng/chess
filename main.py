@@ -32,6 +32,32 @@ def hightlight_square(screen, gs, valid_move, sq_selected):
 					screen.blit(s, (move.end_col*SQ_SIZE, move.end_row*SQ_SIZE))
 
 
+def animate_move(move, screen, board, clock):
+	'''
+	animate piece move
+	'''
+	global colors
+	dR = move.end_row - move.start_row # delta row
+	dC = move.end_col - move.start_col # delta col
+	frame_per_square = 10 # frames to move one square
+	frame_count = (abs(dR) + abs(dC)) * frame_per_square
+	for frame in range(frame_count + 1):
+		row, col = (move.start_row + dR*frame/frame_count, move.start_col + dC*frame/frame_count)
+		draw_board(screen)
+		draw_pieces(screen, board)
+		# erase piece moved from its ending square
+		color = colors[(move.end_row + move.end_col) % 2]
+		end_square = pygame.Rect(move.end_col*SQ_SIZE, move.end_row*SQ_SIZE, SQ_SIZE, SQ_SIZE)
+		pygame.draw.rect(screen, color, end_square)
+		# draw captured piece onto rectangle
+		if move.piece_captured != '--':
+			screen.blit(IMAGES[move.piece_captured], end_square)
+		# draw moving piece
+		screen.blit(IMAGES[move.piece_moved], pygame.Rect(col*SQ_SIZE, row*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+		pygame.display.flip()
+		clock.tick(60)
+
+
 def draw_game_state(screen, gs, valid_move, sq_selected):
 	draw_board(screen)
 	hightlight_square(screen, gs, valid_move, sq_selected)
@@ -39,6 +65,7 @@ def draw_game_state(screen, gs, valid_move, sq_selected):
 
 
 def draw_board(screen):
+	global colors
 	colors = [pygame.Color('white'), pygame.Color('grey')] # return aka => [(255, 255, 255, 255), (190, 190, 190, 255)]
 	for row in range(DIMENSION):
 		for col in range(DIMENSION):
@@ -62,7 +89,7 @@ def main():
 	gs = GameState()
 	valid_move = gs.get_valid_move()
 	move_made = False
-
+	animate = False
 	load_images()
 	running = True
 	sq_selected = () # return (row, col) to keep track of last click of the users
@@ -92,6 +119,7 @@ def main():
 						if move == valid_move[i]:
 							gs.make_move(valid_move[i])
 							move_made = True
+							animate = True
 							sq_selected = ()
 							player_click = []
 					if not move_made:
@@ -100,10 +128,14 @@ def main():
 				if event.key == pygame.K_z: # undo the last move
 					gs.undo_move()
 					move_made = True
+					animate = False
 
 		if move_made:
+			if animate:
+				animate_move(gs.move_log[-1], screen, gs.board, clock)
 			valid_move = gs.get_valid_move()
 			move_made = False
+			animate = False
 
 		draw_game_state(screen, gs, valid_move, sq_selected)
 		clock.tick(MAX_FPS)
