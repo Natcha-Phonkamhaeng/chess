@@ -129,6 +129,14 @@ def main():
 					gs.undo_move()
 					move_made = True
 					animate = False
+				if event.key == pygame.K_r: # reset board if r key is pressed
+					gs = GameState()
+					valid_move = gs.get_valid_move()
+					sq_selected = ()
+					player_click = []
+					move_made = False
+					animate = False
+
 
 		if move_made:
 			if animate:
