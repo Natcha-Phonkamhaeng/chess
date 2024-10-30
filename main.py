@@ -81,6 +81,14 @@ def draw_pieces(screen, board):
 				screen.blit(IMAGES[piece], pygame.Rect(col*SQ_SIZE, row*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
+def draw_text(screen, text):
+	font = pygame.font.SysFont('Helvitca', 32, True, False)
+	text_object = font.render(text, 0, pygame.Color('Black'))
+	text_location = pygame.Rect(0,0, WIDTH, HEIGHT).move(WIDTH/2 - text_object.get_width()/2, HEIGHT/2 - text_object.get_height()/2)
+	screen.blit(text_object, text_location)
+	text_object = font.render(text, 0 , pygame.Color('Blue'))
+	screen.blit(text_object, text_location.move(2,2))
+
 def main():
 	pygame.init()
 	screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -94,36 +102,37 @@ def main():
 	running = True
 	sq_selected = () # return (row, col) to keep track of last click of the users
 	player_click = [] # return [(6,4), (4,4)] to keep track of users click
-
+	game_over = False
 	while running:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
 				running = False
 			elif event.type == pygame.MOUSEBUTTONDOWN:
-				location = pygame.mouse.get_pos() # return (x,y)
-				col = location[0]//SQ_SIZE
-				row = location[1]//SQ_SIZE
-				# print(f'location: {location}, col: {col}, row: {row}')
-				if sq_selected == (row, col): # if users click the same square twice
-					sq_selected = ()
-					player_click = []
-					# print(f'selected square: {sq_selected}')
-				else:
-					sq_selected = (row, col)
-					player_click.append(sq_selected) # append for both 1st and 2nd click
-					# print(f'selected square: {sq_selected}')
-				if len(player_click) == 2: # logic we want to move the pieces for the users
-					move = Move(player_click[0], player_click[1], gs.board)
-					print(move.get_chess_notation())
-					for i in range(len(valid_move)):
-						if move == valid_move[i]:
-							gs.make_move(valid_move[i])
-							move_made = True
-							animate = True
-							sq_selected = ()
-							player_click = []
-					if not move_made:
-						player_click = [sq_selected]
+				if not game_over:
+					location = pygame.mouse.get_pos() # return (x,y)
+					col = location[0]//SQ_SIZE
+					row = location[1]//SQ_SIZE
+					# print(f'location: {location}, col: {col}, row: {row}')
+					if sq_selected == (row, col): # if users click the same square twice
+						sq_selected = ()
+						player_click = []
+						# print(f'selected square: {sq_selected}')
+					else:
+						sq_selected = (row, col)
+						player_click.append(sq_selected) # append for both 1st and 2nd click
+						# print(f'selected square: {sq_selected}')
+					if len(player_click) == 2: # logic we want to move the pieces for the users
+						move = Move(player_click[0], player_click[1], gs.board)
+						print(move.get_chess_notation())
+						for i in range(len(valid_move)):
+							if move == valid_move[i]:
+								gs.make_move(valid_move[i])
+								move_made = True
+								animate = True
+								sq_selected = ()
+								player_click = []
+						if not move_made:
+							player_click = [sq_selected]
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_z: # undo the last move
 					gs.undo_move()
@@ -146,12 +155,21 @@ def main():
 			animate = False
 
 		draw_game_state(screen, gs, valid_move, sq_selected)
+		
+		if gs.checkmate:
+			game_over = True
+			if gs.white_to_move:
+				draw_text(screen, 'Black wins by checkmate')
+			else:
+				draw_text(screen, 'White wins by checkmate')
+		elif gs.stalemate:
+			game_over = True
+			draw_text(screen, 'Stalmate')
+
+
 		clock.tick(MAX_FPS)
 		pygame.display.flip()
 		
-
-
-
 
 if __name__ == '__main__':
 	main()

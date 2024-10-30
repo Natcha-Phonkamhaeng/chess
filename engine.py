@@ -22,8 +22,8 @@ class GameState:
 		self.move_log = []
 		self.white_king_location = (7,4)
 		self.black_king_location = (0,4)
-		self.check_mate = False
-		self.stale_mate = False
+		self.checkmate = False
+		self.stalemate = False
 		self.enpassant_possible = () # coordinate for the square where en passant capture is possible
 		self.current_castling_right = CastleRights(True, True, True, True)
 		self.castle_rights_log = [CastleRights(self.current_castling_right.wks, self.current_castling_right.bks, 
@@ -144,12 +144,12 @@ class GameState:
 			self.undo_move()
 		if len(move) == 0:
 			if self.in_check():
-				self.check_mate = True
+				self.checkmate = True
 			else:
-				self.stale_mate = True
+				self.stalemate = True
 		else:
-			self.check_mate = False
-			self.stale_mate = False
+			self.checkmate = False
+			self.stalemate = False
 
 		self.enpassant_possible = temp_enpassant_possible
 		self.current_castling_right = temp_castling_rights
